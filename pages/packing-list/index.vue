@@ -108,7 +108,7 @@
                                 </b-badge>
                                 /
                                 <b-badge variant="secondary">
-                                    {{ item.acceptedQuantity }}
+                                    {{ item.unshippedQuantity }}
                                 </b-badge>
                             </h4>
                         </template>
@@ -144,6 +144,9 @@
 import Component from 'vue-class-component'
 import Vue from 'vue'
 import moment from 'moment'
+import { getModuleName } from '~/node_modules/vuex-module-decorators/dist/types/helpers'
+import { getModule } from '~/node_modules/vuex-module-decorators'
+import { PackingListFilters } from '~/store'
 
 @Component
 export default class Index extends Vue {
@@ -177,21 +180,32 @@ export default class Index extends Vue {
             }
             this.packingList = packingList
         })
+
+        const filtersStore = getModule(PackingListFilters)
+
+        this.omniFilter = filtersStore.omni
+        this.$watch('omniFilter', filtersStore.setOmni)
+
+        this.fulfillmentCenterFilter = filtersStore.fulfillmentCenterId
+        this.$watch(
+            'fulfillmentCenterFilter',
+            filtersStore.setFulfillmentCenterId
+        )
     }
 
     allocatedVariant({
         allocatedQuantity,
-        acceptedQuantity
+        unshippedQuantity
     }: {
         allocatedQuantity: number
-        acceptedQuantity: number
+        unshippedQuantity: number
     }) {
         let variant = 'warning'
         if (allocatedQuantity === 0) {
             variant = 'danger'
-        } else if (allocatedQuantity === acceptedQuantity) {
+        } else if (allocatedQuantity === unshippedQuantity) {
             variant = 'success'
-        } else if (allocatedQuantity > acceptedQuantity) {
+        } else if (allocatedQuantity > unshippedQuantity) {
             variant = 'danger'
         }
         return variant
