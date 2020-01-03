@@ -40,7 +40,7 @@
                 </b-col>
                 <b-col cols="3">
                     <b-button
-                        :disabled="liveShipmentAllocation > 100"
+                        :disabled="liveShipmentAllocation > toBeAllocated"
                         class="w-100"
                         variant="primary"
                         @click="save"
