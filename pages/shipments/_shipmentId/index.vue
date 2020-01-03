@@ -2,7 +2,7 @@
     <b-col cols="12">
         <b-card :header="`Shipment ${this.shipment.id}`">
             <b-row class="mb-3">
-                <b-col cols="4">
+                <b-col cols="3">
                     FC: {{ shipment.fulfillmentCenterId }}
                     <b-badge v-if="shipment.active" variant="info"
                         >Active</b-badge
@@ -11,10 +11,11 @@
                         >Closed</b-badge
                     >
                 </b-col>
-                <b-col cols="4">
+                <b-col cols="3">
                     Shipment Profit: £{{ totalProfit.toFixed(2) }}
                 </b-col>
-                <b-col cols="4"> Shipment Weight: {{ totalWeight }} kg </b-col>
+                <b-col cols="3"> Shipment Weight: {{ totalWeight }} kg </b-col>
+                <b-col cols="3"><b-button variant="danger" @click="close" class="w-100">Close Shipment</b-button></b-col>
             </b-row>
             <b-row>
                 <b-col cols="12">
@@ -30,7 +31,7 @@
                                 <b-th>SKU</b-th>
                                 <b-th>PO #</b-th>
                                 <b-th>Quantity</b-th>
-                                <b-th>Change</b-th>
+                                <b-th></b-th>
                             </b-tr>
                         </b-thead>
                         <b-tbody>
@@ -160,6 +161,12 @@ export default class Index extends Vue {
             },
             0
         )
+    }
+
+    close() {
+        this.$send('shipments/close', {
+            shipmentId: this.shipment.id
+        })
     }
 
     get totalProfit(): number {
