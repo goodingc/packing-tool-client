@@ -230,7 +230,8 @@ export default class Allocate extends Vue {
                     id,
                     quantity: liveProductQuantity
                 }
-            })
+            }),
+            shipmentId: this.shipment.id
         })
     }
 
