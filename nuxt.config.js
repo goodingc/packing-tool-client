@@ -30,7 +30,7 @@ export default {
     /*
      ** Plugins to load before mounting the App
      */
-    plugins: ['~/plugins/comms.client.ts'],
+    plugins: ['~/plugins/comms.client.ts', '~/plugins/barcode.client.ts'],
     /*
      ** Nuxt.js dev-modules
      */
@@ -57,15 +57,15 @@ export default {
     },
 
     server: {
-        port: 3001,
+        port: 3000,
         host: '0.0.0.0'
     },
 
     fontawesome: {
         imports: [
             {
-                set: "@fortawesome/free-solid-svg-icons",
-                icons: ["fas"]
+                set: '@fortawesome/free-solid-svg-icons',
+                icons: ['fas']
             }
         ]
     }

@@ -8,6 +8,7 @@
                     <b-nav-item to="/upload-data">Upload Data</b-nav-item>
                     <b-nav-item to="/packing-list">Packing List</b-nav-item>
                     <b-nav-item to="/shipments">Shipments</b-nav-item>
+                    <b-nav-item to="/stock-take">Stock Take</b-nav-item>
                 </b-navbar-nav>
             </b-navbar>
         </b-row>

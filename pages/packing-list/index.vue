@@ -14,7 +14,7 @@
                         <b-form-input
                             v-model="omniFilter"
                             placeholder="Title, SKU, PO # or EAN"
-                        ></b-form-input>
+                        />
                         <b-input-group-append>
                             <b-button
                                 :variant="
@@ -57,11 +57,18 @@
                         :items="filteredPackingList"
                         :busy="packingList.length === 0"
                         :fields="tableFields"
+                        :per-page="tableLength"
                     >
                         <template v-slot:table-busy>
                             <div class="text-center text-danger my-2">
-                                <b-spinner class="align-middle"></b-spinner>
-                                <strong>Loading...</strong>
+                                <b-spinner class="align-middle" />
+                                <strong
+                                    >{{
+                                        receivedData
+                                            ? 'Downloading'
+                                            : 'Displaying'
+                                    }}...</strong
+                                >
                             </div>
                         </template>
 
@@ -86,7 +93,7 @@
                                     class="text-danger"
                                     icon="exclamation-circle"
                                     size="2x"
-                                ></font-awesome-icon>
+                                />
                                 <b-popover
                                     :target="`prep-required-${id}`"
                                     triggers="hover focus"
@@ -103,8 +110,8 @@
 
                         <template v-slot:cell(allocated)="{ item }">
                             <h4 class="mb-0" style="min-width: 100px">
-                                <b-badge :variant="allocatedVariant(item)"
-                                    >{{ item.allocatedQuantity }}
+                                <b-badge :variant="allocatedVariant(item)">
+                                    {{ item.allocatedQuantity }}
                                 </b-badge>
                                 /
                                 <b-badge variant="secondary">
@@ -144,7 +151,6 @@
 import Component from 'vue-class-component'
 import Vue from 'vue'
 import moment from 'moment'
-import { getModuleName } from '~/node_modules/vuex-module-decorators/dist/types/helpers'
 import { getModule } from '~/node_modules/vuex-module-decorators'
 import { PackingListFilters } from '~/store'
 
@@ -162,6 +168,10 @@ export default class Index extends Vue {
         deliveryWindow: true
     }
 
+    receivedData = false
+
+    tableLength = 25
+
     mounted() {
         this.$send('models/selectAll', {
             model: 'fulfillmentCenters'
@@ -170,6 +180,7 @@ export default class Index extends Vue {
         })
 
         this.$send('packingList/get').then((packingList) => {
+            this.receivedData = true
             for (const packingListItem of packingList) {
                 packingListItem.purchaseOrder.deliveryWindow.start = moment(
                     packingListItem.purchaseOrder.deliveryWindow.start
@@ -191,6 +202,19 @@ export default class Index extends Vue {
             'fulfillmentCenterFilter',
             filtersStore.setFulfillmentCenterId
         )
+
+        const tableElement = (this.$refs.table as Vue).$el as HTMLTableElement
+
+        const setTableLength = () => {
+            const scrolledHeight =
+                tableElement.scrollTop + tableElement.clientHeight
+            const scrolledRows = (scrolledHeight - 74) / 37 + 5
+            if (scrolledRows > this.tableLength) {
+                this.tableLength = scrolledRows
+            }
+        }
+        setTableLength()
+        tableElement.onscroll = setTableLength
     }
 
     allocatedVariant({
@@ -209,6 +233,30 @@ export default class Index extends Vue {
             variant = 'danger'
         }
         return variant
+    }
+
+    get filteredPackingList() {
+        const omni = this.omniFilter.toLowerCase()
+        const fcFiltered =
+            this.fulfillmentCenterFilter === '*'
+                ? this.packingList
+                : this.packingList.filter(
+                      ({
+                          purchaseOrder: {
+                              fulfillmentCenter: { id }
+                          }
+                      }) => id === this.fulfillmentCenterFilter
+                  )
+        return omni === ''
+            ? fcFiltered
+            : fcFiltered.filter(({ purchaseOrder, sku, title, ean }) => {
+                  return (
+                      purchaseOrder.id.toLowerCase().includes(omni) ||
+                      (sku && sku.toLowerCase().includes(omni)) ||
+                      (title && title.toLowerCase().includes(omni)) ||
+                      (ean && ean.toLowerCase().includes(omni))
+                  )
+              })
     }
 
     get fulfillmentCenterOptions(): string[] {
@@ -253,37 +301,9 @@ export default class Index extends Vue {
                 key: 'prepRequired',
                 label: ''
             },
-            {
-                key: 'allocated'
-            },
-            {
-                key: 'allocate'
-            }
+            'allocated',
+            'allocate'
         ]
-    }
-
-    get filteredPackingList(): any[] {
-        const omni = this.omniFilter.toLowerCase()
-        const fcFiltered =
-            this.fulfillmentCenterFilter === '*'
-                ? this.packingList
-                : this.packingList.filter(
-                      ({
-                          purchaseOrder: {
-                              fulfillmentCenter: { id }
-                          }
-                      }) => id === this.fulfillmentCenterFilter
-                  )
-        return omni === ''
-            ? fcFiltered
-            : fcFiltered.filter(({ purchaseOrder, sku, title, ean }) => {
-                  return (
-                      purchaseOrder.id.toLowerCase().includes(omni) ||
-                      (sku && sku.toLowerCase().includes(omni)) ||
-                      (title && title.toLowerCase().includes(omni)) ||
-                      (ean && ean.toLowerCase().includes(omni))
-                  )
-              })
     }
 }
 </script>
