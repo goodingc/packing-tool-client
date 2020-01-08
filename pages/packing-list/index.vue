@@ -65,8 +65,8 @@
                                 <strong
                                     >{{
                                         receivedData
-                                            ? 'Downloading'
-                                            : 'Displaying'
+                                            ? 'Displaying'
+                                            : 'Downloading'
                                     }}...</strong
                                 >
                             </div>

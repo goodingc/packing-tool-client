@@ -17,7 +17,7 @@
                             <b-table
                                 :items="headerMappings"
                                 :fields="headerTableFields"
-                                sticky-header="calc(100vh - 300px)"
+                                sticky-header="calc(100vh - 270px)"
                             >
                                 <template v-slot:cell(fileHeader)="{ item }">
                                     <b-form-select
@@ -26,6 +26,17 @@
                                     />
                                 </template>
                             </b-table>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col cols="12">
+                            <b-button
+                                class="w-100"
+                                variant="primary"
+                                :disabled="errors.rows.length !== 0"
+                                @click="upload"
+                                >Upload</b-button
+                            >
                         </b-col>
                     </b-row>
                 </b-card>
@@ -585,6 +596,7 @@ export default class Index extends Vue {
                     sku: dataRow.sku,
                     title: dataRow.title,
                     asin: dataRow.asin,
+                    ean: dataRow.ean,
                     orderedQuantity: dataRow.orderedQuantity,
                     acceptedQuantity: dataRow.acceptedQuantity,
                     sellPrice: dataRow.sellPrice,
@@ -600,6 +612,28 @@ export default class Index extends Vue {
                     weight: dataRow.weight
                 })
             })
+        }
+    }
+
+    upload() {
+        for (const purchaseOrder of this.purchaseOrders) {
+            const purchaseOrderClean = Object.assign({}, purchaseOrder)
+            delete purchaseOrderClean.meta
+            purchaseOrderClean.deliveryWindowStart = format(
+                purchaseOrderClean.deliveryWindowStart,
+                'YYYY-MM-DD'
+            )
+            purchaseOrderClean.deliveryWindowEnd = format(
+                purchaseOrderClean.deliveryWindowEnd,
+                'YYYY-MM-DD'
+            )
+            this.$send('uploadData/addPurchaseOrder', purchaseOrderClean)
+                .catch((error) => {
+                    purchaseOrder.meta.uploadError = error.message
+                })
+                .finally(() => {
+                    purchaseOrder.meta.uploaded = true
+                })
         }
     }
 

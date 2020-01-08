@@ -80,6 +80,7 @@ const commsPlugin: Plugin = ({ app }, inject) => {
                     if (payload.success) {
                         resolve(payload.data)
                     } else {
+                        console.log(`[!] Error: `, payload.error)
                         reject(payload.error)
                     }
                 },
