@@ -15,7 +15,7 @@ declare module 'vue/types/vue' {
 }
 
 const commsPlugin: Plugin = ({ app }, inject) => {
-    const serverUrl: string = `ws://${document.location.hostname}:8002`
+    const serverUrl: string = `ws://${document.location.hostname}:8000`
     let ws = new WebSocket(serverUrl)
 
     const messageHandlers: MessageHandler[] = []
