@@ -15,11 +15,32 @@
                     Shipment Profit: £{{ totalProfit.toFixed(2) }}
                 </b-col>
                 <b-col cols="3"> Shipment Weight: {{ totalWeight }} kg </b-col>
-                <b-col cols="3"><b-button variant="danger" @click="close" class="w-100">Close Shipment</b-button></b-col>
+                <b-col cols="3">
+                    <span id="close-button-wrapper">
+                        <b-button
+                            variant="danger"
+                            @click="close"
+                            class="w-100"
+                            :disabled="closeError"
+                            v-if="true || shipment.open"
+                        >
+                            Close Shipment
+                        </b-button>
+                    </span>
+                    <b-popover
+                        v-if="closeError"
+                        target="close-button-wrapper"
+                        triggers="hover"
+                        title="Not closeable"
+                        variant="danger"
+                    >
+                        {{ closeError }}
+                    </b-popover>
+                </b-col>
             </b-row>
-            <b-row>
+            <b-row class="mb-3">
                 <b-col cols="12">
-                    <b-table-simple>
+                    <b-table-simple small>
                         <b-thead>
                             <b-tr>
                                 <b-th colspan="2">Box</b-th>
@@ -57,14 +78,19 @@
                                         0 kg
                                     </b-td>
                                     <b-td colspan="4">
-                                        <!--                                        <b-button-->
-                                        <!--                                            v-if="box.index !== 0 && trailingFullBox"-->
-                                        <!--                                            class="w-100"-->
-                                        <!--                                            variant="primary"-->
-                                        <!--                                            @click="swap(box)"-->
-                                        <!--                                        >-->
-                                        <!--                                            Swap with box {{ trailingFullBox.index }}-->
-                                        <!--                                        </b-button>-->
+                                        <b-button
+                                            v-if="
+                                                box.index !== 0 &&
+                                                    trailingFullBox
+                                            "
+                                            class="w-100"
+                                            variant="primary"
+                                            @click="swapBoxes(box)"
+                                            size="sm"
+                                        >
+                                            Swap with box
+                                            {{ trailingFullBox.index }}
+                                        </b-button>
                                     </b-td>
                                 </b-tr>
                                 <b-tr
@@ -112,13 +138,22 @@
                                             :to="
                                                 `/shipments/${shipment.id}/allocate?purchaseOrderProductId=${purchaseOrderProduct.id}`
                                             "
-                                            >Change</b-button
+                                            size="sm"
                                         >
+                                            Change
+                                        </b-button>
                                     </b-td>
                                 </b-tr>
                             </template>
                         </b-tbody>
                     </b-table-simple>
+                </b-col>
+            </b-row>
+            <b-row v-if="hasEmptyTrailingBoxes">
+                <b-col cols="12">
+                    <b-button variant="primary" class="w-100">
+                        Clear empty trailing boxes
+                    </b-button>
                 </b-col>
             </b-row>
         </b-card>
@@ -139,7 +174,10 @@ export default class Index extends Vue {
         this.$registerAction(
             'shipments/update',
             (boxes) => {
-                this.boxes = boxes
+                this.boxes = boxes.sort(
+                    (a: { index: number }, b: { index: number }) =>
+                        a.index - b.index
+                )
             },
             tag
         )
@@ -169,6 +207,14 @@ export default class Index extends Vue {
         })
     }
 
+    swapBoxes({ id }: { id: number }) {
+        this.$send('shipments/boxes/swap', {
+            id
+        })
+    }
+
+    clearEmptyTrailingBoxes() {}
+
     get totalProfit(): number {
         return this.boxes.reduce((totalProfit: number, box: any) => {
             return (
@@ -187,6 +233,35 @@ export default class Index extends Vue {
         return this.boxes.reduce((totalWeight: number, box: any) => {
             return totalWeight + this.boxWeight(box)
         }, 0)
+    }
+
+    get hasEmptyTrailingBoxes() {
+        if (this.boxes.length === 0) return false
+        return (
+            this.boxes[this.boxes.length - 1].purchaseOrderProducts.length === 0
+        )
+    }
+
+    get closeError() {
+        if (this.hasEmptyTrailingBoxes) return 'Has empty trailing boxes'
+        if (this.hasEmptyMidBoxes) return 'Has empty boxes mid shipment'
+    }
+
+    get hasEmptyMidBoxes() {
+        return this.boxes.some(
+            ({ purchaseOrderProducts, index }) =>
+                purchaseOrderProducts.length === 0 &&
+                index !== 0 &&
+                index < this.trailingFullBox.index
+        )
+    }
+
+    get trailingFullBox() {
+        return [...this.boxes]
+            .reverse()
+            .find(
+                ({ purchaseOrderProducts }) => purchaseOrderProducts.length > 0
+            )
     }
 }
 </script>

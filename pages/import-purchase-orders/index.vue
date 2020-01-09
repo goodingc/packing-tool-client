@@ -627,7 +627,7 @@ export default class Index extends Vue {
                 purchaseOrderClean.deliveryWindowEnd,
                 'YYYY-MM-DD'
             )
-            this.$send('uploadData/addPurchaseOrder', purchaseOrderClean)
+            this.$send('importPurchaseOrders/addPurchaseOrder', purchaseOrderClean)
                 .catch((error) => {
                     purchaseOrder.meta.uploadError = error.message
                 })

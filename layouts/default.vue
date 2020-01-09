@@ -5,7 +5,9 @@
                 <b-navbar-brand to="/">Packing Tool</b-navbar-brand>
 
                 <b-navbar-nav>
-                    <b-nav-item to="/upload-data">Upload Data</b-nav-item>
+                    <b-nav-item to="/import-purchase-orders"
+                        >Import Purchase Orders</b-nav-item
+                    >
                     <b-nav-item to="/packing-list">Packing List</b-nav-item>
                     <b-nav-item to="/shipments">Shipments</b-nav-item>
                     <b-nav-item to="/stock-take">Stock Take</b-nav-item>
