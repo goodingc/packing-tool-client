@@ -109,16 +109,16 @@
                                 <b-col cols="4">
                                     Deliver from:
                                     {{
-                                        formatDate(
-                                            purchaseOrder.deliveryWindowStart
+                                        purchaseOrder.deliveryWindowStart.format(
+                                            'DD/MM/YYYY'
                                         )
                                     }}
                                 </b-col>
                                 <b-col cols="4">
                                     Deliver until:
                                     {{
-                                        formatDate(
-                                            purchaseOrder.deliveryWindowEnd
+                                        purchaseOrder.deliveryWindowEnd.format(
+                                            'DD/MM/YYYY'
                                         )
                                     }}
                                 </b-col>
@@ -236,8 +236,8 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import Papa, { ParseResult } from 'papaparse'
-import { parse, format, ValidDate } from 'ts-date'
 import { ean13 } from 'ean-check'
+import moment from 'moment'
 
 @Component
 export default class Index extends Vue {
@@ -393,10 +393,6 @@ export default class Index extends Vue {
         )
     }
 
-    formatDate(date: ValidDate) {
-        return format(date, 'DD/MM/YYYY')
-    }
-
     readFile(event: any) {
         Papa.parse(event.target.files[0], {
             dynamicTyping: true,
@@ -522,13 +518,17 @@ export default class Index extends Vue {
 
             assert(
                 'deliveryWindowStart',
-                (dws) => typeof dws === 'string' && !!parse(dws, 'DD/MM/YYYY'),
+                (dws) =>
+                    typeof dws === 'string' &&
+                    moment(dws, 'DD/MM/YYYY').isValid(),
                 'Invalid date'
             )
 
             assert(
                 'deliveryWindowEnd',
-                (dwe) => typeof dwe === 'string' && !!parse(dwe, 'DD/MM/YYYY'),
+                (dwe) =>
+                    typeof dwe === 'string' &&
+                    moment(dwe, 'DD/MM/YYYY').isValid(),
                 'Invalid date'
             )
 
@@ -576,11 +576,11 @@ export default class Index extends Vue {
                         id: dataRow.purchaseOrderId,
                         fulfillmentCenterId: dataRow.fulfillmentCenterId,
                         vendorCode: dataRow.vendorCode,
-                        deliveryWindowStart: parse(
+                        deliveryWindowStart: moment(
                             dataRow.deliveryWindowStart,
                             'DD/MM/YYYY'
                         ),
-                        deliveryWindowEnd: parse(
+                        deliveryWindowEnd: moment(
                             dataRow.deliveryWindowEnd,
                             'DD/MM/YYYY'
                         ),
@@ -619,15 +619,15 @@ export default class Index extends Vue {
         for (const purchaseOrder of this.purchaseOrders) {
             const purchaseOrderClean = Object.assign({}, purchaseOrder)
             delete purchaseOrderClean.meta
-            purchaseOrderClean.deliveryWindowStart = format(
-                purchaseOrderClean.deliveryWindowStart,
+            purchaseOrderClean.deliveryWindowStart = purchaseOrderClean.deliveryWindowStart.format(
                 'YYYY-MM-DD'
             )
-            purchaseOrderClean.deliveryWindowEnd = format(
-                purchaseOrderClean.deliveryWindowEnd,
+            purchaseOrderClean.deliveryWindowEnd = purchaseOrderClean.deliveryWindowEnd.format(
                 'YYYY-MM-DD'
             )
-            this.$send('importPurchaseOrders/addPurchaseOrder', purchaseOrderClean)
+            this.$send('importPurchaseOrders/addPurchaseOrder', {
+                purchaseOrder: purchaseOrderClean
+            })
                 .catch((error) => {
                     purchaseOrder.meta.uploadError = error.message
                 })

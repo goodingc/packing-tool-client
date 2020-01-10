@@ -69,14 +69,14 @@ export default class ShipmentsList extends Vue {
 
     mounted() {
         this.$send('shipments/getAll').then((shipments) => {
-            this.shipments = shipments.sort(
-                (a: any, b: any) => b.boxCount - a.boxCount
-            )
+            this.shipments = shipments
         })
     }
 
     get activeShipments() {
-        return this.shipments.filter(({ active }) => active)
+        return this.shipments
+            .filter(({ active }) => active)
+            .sort((a: any, b: any) => b.boxCount - a.boxCount)
     }
 
     get inactiveShipments() {

@@ -11,6 +11,8 @@
                                         v-model="bay"
                                         placeholder="Bay"
                                         autocomplete="off"
+                                        :disabled="awaitingConfirmation"
+                                        :formatter="toUpper"
                                     />
                                 </b-input-group-prepend>
                                 <b-form-input
@@ -21,6 +23,7 @@
                                     placeholder="EAN, SKU or Title"
                                     autocomplete="off"
                                     autofocus
+                                    :disabled="awaitingConfirmation"
                                 />
                                 <b-input-group-append>
                                     <b-form-input
@@ -28,11 +31,14 @@
                                         placeholder="Quantity Change"
                                         type="number"
                                         min="1"
+                                        :disabled="awaitingConfirmation"
                                     />
                                     <b-button
                                         @click="formSubmit"
                                         variant="primary"
-                                        :disabled="!canSubmit"
+                                        :disabled="
+                                            !canSubmit || awaitingConfirmation
+                                        "
                                         >Submit</b-button
                                     >
                                 </b-input-group-append>
@@ -40,56 +46,81 @@
                         </b-col>
                     </b-row>
                     <b-row class="text-secondary mb-1">
-                        <b-col cols="3" class="pt-2">
-                            SKU: {{ product.sku }}
-                        </b-col>
-                        <b-col cols="9" class="pt-2">
-                            Title: {{ product.title }}
-                        </b-col>
+                        <b-col cols="3"> SKU: {{ product.sku }} </b-col>
+                        <b-col cols="9"> Title: {{ product.title }} </b-col>
                     </b-row>
                     <b-table
                         :fields="tableHeaders"
                         :items="localQueue"
                         :tbody-tr-class="rowClass"
+                        small
                     >
+                        <template v-slot:cell(bay)="{ item }">
+                            <template v-if="editingId !== item.id">
+                                {{ item.bay }}
+                            </template>
+                            <b-form-input
+                                v-else
+                                type="text"
+                                v-model="item.bay"
+                                :formatter="toUpper"
+                            />
+                        </template>
                         <template
                             v-slot:cell(quantityChange)="{
-                                item: { quantityChange }
+                                item
                             }"
                         >
-                            <h4 class="mb-0">
+                            <h4 class="mb-0" v-if="editingId !== item.id">
                                 <b-badge
                                     :variant="
-                                        quantityChange > 0
+                                        item.quantityChange > 0
                                             ? 'success'
                                             : 'danger'
                                     "
                                 >
                                     {{
-                                        quantityChange > 0
-                                            ? '+' + quantityChange
-                                            : quantityChange
+                                        item.quantityChange > 0
+                                            ? '+' + item.quantityChange
+                                            : item.quantityChange
                                     }}
                                 </b-badge>
                             </h4>
+                            <b-form-input
+                                v-else
+                                type="number"
+                                v-model="item.quantityChange"
+                            />
                         </template>
 
-                        <template v-slot:cell(undo)="{ item }">
-                            <b-button
-                                @click="undo(item)"
+                        <template v-slot:cell(edit)="{ item }">
+                            <b-button-group
+                                v-if="editingId !== item.id"
                                 class="w-100"
-                                variant="danger"
-                                >Undo</b-button
+                                size="sm"
+                            >
+                                <b-button
+                                    variant="secondary"
+                                    @click="editingId = item.id"
+                                >
+                                    Edit
+                                </b-button>
+                                <b-button @click="undo(item)" variant="danger">
+                                    Undo
+                                </b-button>
+                            </b-button-group>
+                            <b-button
+                                v-else
+                                variant="primary"
+                                @click="saveEdit"
+                                class="w-100"
+                                size="sm"
+                                >Save</b-button
                             >
                         </template>
                     </b-table>
                 </b-card>
             </b-col>
-            <!--            <b-col cols="3">-->
-            <!--                <b-card header="Quantities">-->
-            <!--                    <b-table :items="quantities" :fields="quantitiesHeaders" />-->
-            <!--                </b-card>-->
-            <!--            </b-col>-->
         </b-row>
     </b-col>
 </template>
@@ -100,8 +131,8 @@ import Vue from 'vue'
 
 @Component
 export default class Index extends Vue {
-    bay: string = ''
-    query: string = ''
+    bay: string = 'TEST'
+    query: string = 'AM-A1500'
     quantityChange: number = 1
 
     product = {
@@ -112,14 +143,7 @@ export default class Index extends Vue {
     unresolvedSearches = 0
     formWaiting = false
 
-    quantities: [] = []
-
-    barcodeOptions = {
-        displayValue: false,
-        fontSize: 5,
-        width: 1,
-        height: 30
-    }
+    awaitingConfirmation = false
 
     tableHeaders = [
         'bay',
@@ -129,24 +153,21 @@ export default class Index extends Vue {
         },
         'title',
         'quantityChange',
-        {
-            key: 'undo',
-            label: ''
-        }
-    ]
-
-    quantitiesHeaders = [
-        'bay',
-        {
-            key: 'sku',
-            label: 'SKU'
-        },
-        'quantity'
+        'edit'
     ]
 
     localQueue: StockTakeItem[] = []
 
+    editingId = 0
+
     mounted() {
+        this.$send('stockTake/getRecentChanges').then((items) => {
+            this.localQueue = items.map((item: StockTakeItem) => {
+                item.submitted = true
+                return item
+            })
+        })
+
         this.$watch('query', (newValue) => {
             this.unresolvedSearches++
             this.$send('stockTake/productSearch', {
@@ -169,14 +190,6 @@ export default class Index extends Vue {
                 }
             })
         })
-
-        this.$send('stockTake/getQuantities').then((quantities) => {
-            this.quantities = quantities
-        })
-
-        this.$watch('bay', (newValue: string) => {
-            this.bay = newValue.toUpperCase()
-        })
     }
 
     submitChange(
@@ -193,15 +206,19 @@ export default class Index extends Vue {
             submitted: false
         }
         this.localQueue.unshift(item)
+        this.awaitingConfirmation = true
         this.$send('stockTake/submitChange', {
             bay,
             sku,
             quantityChange
-        }).then(() => {
+        }).then(({ insertId }) => {
+            this.awaitingConfirmation = false
             item.submitted = true
-            this.$send('stockTake/getQuantities').then((quantities) => {
-                this.quantities = quantities
-            })
+            item.id = insertId
+            ;(this.$refs.queryInput as HTMLInputElement).setSelectionRange(
+                0,
+                9999
+            )
         })
     }
 
@@ -218,15 +235,30 @@ export default class Index extends Vue {
             this.quantityChange
         )
         this.quantityChange = 1
-        ;(this.$refs.queryInput as HTMLInputElement).select()
     }
 
     undo(item: StockTakeItem) {
         this.submitChange(item.bay, item.sku, item.title, -item.quantityChange)
     }
 
+    saveEdit() {
+        const editingItem = this.localQueue.find(
+            ({ id }) => id === this.editingId
+        )
+        if (!editingItem) return
+        editingItem.submitted = false
+        this.$send('stockTake/editChange', editingItem).then(() => {
+            this.editingId = 0
+            editingItem.submitted = true
+        })
+    }
+
     rowClass({ submitted }: StockTakeItem) {
         return submitted ? 'table-success' : 'table-info'
+    }
+
+    toUpper(value: string) {
+        return value.toUpperCase()
     }
 
     get canSubmit() {
@@ -235,11 +267,12 @@ export default class Index extends Vue {
 }
 
 interface StockTakeItem {
+    id?: number
     bay: string
     sku: string
     title: string
     quantityChange: number
-    submitted: boolean
+    submitted?: boolean
 }
 </script>
 

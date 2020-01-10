@@ -137,6 +137,7 @@
                                 :to="
                                     `shipments/${activeShipmentId}/allocate?purchaseOrderProductId=${id}`
                                 "
+                                size="sm"
                                 >Allocate</b-button
                             >
                         </template>
@@ -153,6 +154,7 @@ import Vue from 'vue'
 import moment from 'moment'
 import { getModule } from '~/node_modules/vuex-module-decorators'
 import { PackingListFilters } from '~/store'
+
 
 @Component
 export default class Index extends Vue {

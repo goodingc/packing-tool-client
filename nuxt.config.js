@@ -30,7 +30,11 @@ export default {
     /*
      ** Plugins to load before mounting the App
      */
-    plugins: ['~/plugins/comms.client.ts', '~/plugins/barcode.client.ts'],
+    plugins: [
+        '~/plugins/comms.client.ts',
+        '~/plugins/barcode.client.ts',
+        '~/plugins/print.client.ts'
+    ],
     /*
      ** Nuxt.js dev-modules
      */

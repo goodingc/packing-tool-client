@@ -21,8 +21,8 @@
                             variant="danger"
                             @click="close"
                             class="w-100"
-                            :disabled="closeError"
-                            v-if="true || shipment.open"
+                            :disabled="!!closeError"
+                            v-if="shipment.open"
                         >
                             Close Shipment
                         </b-button>
@@ -81,7 +81,9 @@
                                         <b-button
                                             v-if="
                                                 box.index !== 0 &&
-                                                    trailingFullBox
+                                                    trailingFullBox &&
+                                                    box.index <
+                                                        trailingFullBox.index
                                             "
                                             class="w-100"
                                             variant="primary"
@@ -151,7 +153,11 @@
             </b-row>
             <b-row v-if="hasEmptyTrailingBoxes">
                 <b-col cols="12">
-                    <b-button variant="primary" class="w-100">
+                    <b-button
+                        variant="primary"
+                        class="w-100"
+                        @click="clearEmptyTrailingBoxes"
+                    >
                         Clear empty trailing boxes
                     </b-button>
                 </b-col>
@@ -213,7 +219,11 @@ export default class Index extends Vue {
         })
     }
 
-    clearEmptyTrailingBoxes() {}
+    clearEmptyTrailingBoxes() {
+        this.$send('shipments/boxes/clearEmptyTrailing', {
+            shipmentId: this.shipment.id
+        })
+    }
 
     get totalProfit(): number {
         return this.boxes.reduce((totalProfit: number, box: any) => {
