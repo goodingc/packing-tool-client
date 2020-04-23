@@ -6,8 +6,7 @@
                     <b-row class="mb-1">
                         <b-col cols="12">
                             <b-input-group size="lg">
-                                <b-input-group-prepend>
-                                    <b-form-input
+                                <b-form-input
                                         ref="bayInput"
                                         @click="$refs.bayInput.select()"
                                         v-model="bay"
@@ -16,7 +15,6 @@
                                         :disabled="awaitingConfirmation"
                                         :formatter="toUpper"
                                     />
-                                </b-input-group-prepend>
                                 <b-form-input
                                     ref="queryInput"
                                     @keypress.enter="formSubmit"
@@ -27,8 +25,7 @@
                                     autofocus
                                     :disabled="awaitingConfirmation"
                                 />
-                                <b-input-group-append>
-                                    <b-form-input
+                                <b-form-input
                                         ref="quantityInput"
                                         @click="$refs.quantityInput.select()"
                                         v-model.number="quantityChange"
@@ -37,6 +34,7 @@
                                         min="1"
                                         :disabled="awaitingConfirmation"
                                     />
+                                <b-input-group-append>
                                     <b-button
                                         @click="formSubmit"
                                         variant="primary"
