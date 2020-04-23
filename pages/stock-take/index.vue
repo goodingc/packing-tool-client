@@ -8,6 +8,8 @@
                             <b-input-group>
                                 <b-input-group-prepend>
                                     <b-form-input
+                                        ref="bayInput"
+                                        @click="$refs.bayInput.select()"
                                         v-model="bay"
                                         placeholder="Bay"
                                         autocomplete="off"
@@ -27,6 +29,8 @@
                                 />
                                 <b-input-group-append>
                                     <b-form-input
+                                        ref="quantityInput"
+                                        @click="$refs.quantityInput.select()"
                                         v-model.number="quantityChange"
                                         placeholder="Quantity Change"
                                         type="number"
