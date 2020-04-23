@@ -219,7 +219,7 @@ export default class Index extends Vue {
             this.awaitingConfirmation = false
             item.submitted = true
             item.id = insertId
-            this.$refs.queryInput.select()
+            (this.$refs.queryInput as HTMLInputElement).select()
             // ;(this.$refs.queryInput as HTMLInputElement).setSelectionRange(
             //     0,
             //     9999
