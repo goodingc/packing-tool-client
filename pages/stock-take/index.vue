@@ -5,7 +5,7 @@
                 <b-card header="Stock Take">
                     <b-row class="mb-1">
                         <b-col cols="12">
-                            <b-input-group>
+                            <b-input-group size="lg">
                                 <b-input-group-prepend>
                                     <b-form-input
                                         ref="bayInput"
