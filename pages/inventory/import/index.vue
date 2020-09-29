@@ -120,10 +120,10 @@ export default class Index extends Vue {
             header: true,
             skipEmptyLines: 'greedy',
             worker: true,
-            complete: (results: ParseResult): void => {
+            complete: (results: ParseResult<any>): void => {
                 this.parsing = false
                 this.rowsParsed = results.data.length
-                this.dataRows = results.data.map((row) => {
+                this.dataRows = results.data.map((row: any) => {
                     return {
                         sku: row.VAR_SKU,
                         title: row.VAR_Name,

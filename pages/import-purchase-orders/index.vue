@@ -35,7 +35,8 @@
                                 variant="primary"
                                 :disabled="errors.rows.length !== 0"
                                 @click="upload"
-                                >Upload</b-button
+                            >Upload
+                            </b-button
                             >
                         </b-col>
                     </b-row>
@@ -58,8 +59,8 @@
                         >
                             <template v-if="value.error">
                                 <span :id="`${index}-${key}`">{{
-                                    value.value
-                                }}</span>
+                                        value.value
+                                    }}</span>
                                 <b-popover
                                     triggers="hover"
                                     :target="`${index}-${key}`"
@@ -179,14 +180,14 @@
                                                     kg
                                                 </b-col>
                                                 <b-col cols="2"
-                                                    >Prep Required:
+                                                >Prep Required:
                                                     {{
                                                         product.prepRequired ||
-                                                            'None'
+                                                        'None'
                                                     }}
                                                 </b-col>
                                                 <b-col cols="2"
-                                                    >VAT:
+                                                >VAT:
                                                     {{ product.vat * 100 }}%
                                                 </b-col>
                                             </b-row>
@@ -398,8 +399,8 @@ export default class Index extends Vue {
             dynamicTyping: true,
             header: true,
             skipEmptyLines: true,
-            complete: (results: ParseResult): void => {
-                this.fileHeaders = results.meta.fields
+            complete: (results: ParseResult<any>): void => {
+                this.fileHeaders = results.meta.fields as string[]
                 this.fileRows = results.data
                 const path = event.target.value.split('\\')
                 this.filePlaceholder = path[path.length - 1]
