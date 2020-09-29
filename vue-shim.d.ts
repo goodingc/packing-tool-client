@@ -6,3 +6,4 @@ declare module '*.vue' {
 declare module 'ean-check'
 declare module '@chenfengyuan/vue-barcode'
 declare module 'vue-html-to-paper'
+declare module 'promise-file-reader'

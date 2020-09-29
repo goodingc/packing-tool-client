@@ -5,9 +5,14 @@
                 <b-navbar-brand to="/">Packing Tool</b-navbar-brand>
 
                 <b-navbar-nav>
-                    <b-nav-item to="/import-purchase-orders"
-                        >Import Purchase Orders</b-nav-item
-                    >
+                    <b-nav-item-dropdown text="Import Purchase Orders">
+                        <b-dropdown-item to="/import-purchase-orders">
+                            Original
+                        </b-dropdown-item>
+                        <b-dropdown-item to="/import-purchase-orders/v2">
+                            V2
+                        </b-dropdown-item>
+                    </b-nav-item-dropdown>
                     <b-nav-item to="/packing-list">Packing List</b-nav-item>
                     <b-nav-item to="/shipments">Shipments</b-nav-item>
                     <b-nav-item to="/stock-take">Stock Take</b-nav-item>
