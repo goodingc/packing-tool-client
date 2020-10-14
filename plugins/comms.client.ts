@@ -15,7 +15,7 @@ declare module 'vue/types/vue' {
 }
 
 const commsPlugin: Plugin = ({ app }, inject) => {
-    const serverUrl: string = `ws://${document.location.hostname}:8000`
+    const serverUrl = `ws://${document.location.hostname}:8000`
     let ws = new WebSocket(serverUrl)
 
     const messageHandlers: MessageHandler[] = []
@@ -32,7 +32,7 @@ const commsPlugin: Plugin = ({ app }, inject) => {
     }
 
     const handleMessage = (event: MessageEvent) => {
-        const message = <Message>JSON.parse(event.data)
+        const message = JSON.parse(event.data) as Message
         let messageHandler
         for (messageHandler of messageHandlers) {
             if (messageHandler.handles(message)) {
@@ -49,7 +49,8 @@ const commsPlugin: Plugin = ({ app }, inject) => {
         )
         ws = new WebSocket(serverUrl)
         ws.onopen = openHandler
-        ws.onerror = () => {
+        ws.onerror = (e) => {
+            console.log(`[-] WebSocket error: ${e}`)
             if (attempt === 20) {
                 console.log(
                     `[-] Unable to reestablish WebSocket connection, quitting`
